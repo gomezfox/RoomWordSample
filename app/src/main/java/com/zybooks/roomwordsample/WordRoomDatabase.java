@@ -2,8 +2,10 @@ package com.zybooks.roomwordsample;
 
 import android.content.Context;
 
+import androidx.annotation.NonNull;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
+import androidx.sqlite.db.SupportSQLiteDatabase;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -23,6 +25,7 @@ public abstract class WordRoomDatabase extends RoomDatabase {
                 if (INSTANCE == null) {
                     INSTANCE = Room.databaseBuilder(context.getApplicationContext(),
                             WordRoomDatabase.class, "word_database")
+                            .addCallback(sRoomDatabaseCallback)
                             .build();
                 }
             }
@@ -30,4 +33,16 @@ public abstract class WordRoomDatabase extends RoomDatabase {
         return INSTANCE;
     }
 
+    private static RoomDatabase.Callback sRoomDatabaseCallback = new RoomDatabase.Callback() {
+        @Override
+        public void onCreate(@NonNull SupportSQLiteDatabase db) {
+            super.onCreate(db);
+            WordDao dao = INSTANCE.wordDao();
+            dao.deleteAll();
+            Word word = new Word("Hello");
+            dao.insert(word);
+            word = new Word("World");
+            dao.insert(word);
+        }
+    };
 }
